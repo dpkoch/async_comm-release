@@ -1,0 +1,8 @@
+ros-melodic-async-comm (0.1.0-0stretch) stretch; urgency=high
+
+  * Initial release
+  * Contributors: Daniel Koch, James Jackson
+
+ -- Daniel Koch <danielpkoch@gmail.com>  Fri, 31 Aug 2018 06:00:00 -0000
+
+
