@@ -38,6 +38,7 @@
 #ifndef ASYNC_COMM_COMM_H
 #define ASYNC_COMM_COMM_H
 
+#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -47,14 +48,6 @@
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
-
-#ifndef ASYNC_COMM_READ_BUFFER_SIZE
-  #define ASYNC_COMM_READ_BUFFER_SIZE 1024
-#endif
-
-#ifndef ASYNC_COMM_WRITE_BUFFER_SIZE
-  #define ASYNC_COMM_WRITE_BUFFER_SIZE 1024
-#endif
 
 namespace async_comm
 {
@@ -110,6 +103,9 @@ public:
 
 protected:
 
+  static constexpr size_t READ_BUFFER_SIZE = 1024;
+  static constexpr size_t WRITE_BUFFER_SIZE = 1024;
+
   virtual bool is_open() = 0;
   virtual bool do_init() = 0;
   virtual void do_close() = 0;
@@ -122,17 +118,29 @@ protected:
 
 private:
 
+  struct ReadBuffer
+  {
+    uint8_t data[READ_BUFFER_SIZE];
+    size_t len;
+
+    ReadBuffer(const uint8_t * buf, size_t len) : len(len)
+    {
+      assert(len <= READ_BUFFER_SIZE); // only checks in debug mode
+      memcpy(data, buf, len);
+    }
+  };
+
   struct WriteBuffer
   {
-    uint8_t data[ASYNC_COMM_WRITE_BUFFER_SIZE];
+    uint8_t data[WRITE_BUFFER_SIZE];
     size_t len;
     size_t pos;
 
     WriteBuffer() : len(0), pos(0) {}
 
-    WriteBuffer(const uint8_t * buf, uint16_t len) : len(len), pos(0)
+    WriteBuffer(const uint8_t * buf, size_t len) : len(len), pos(0)
     {
-      assert(len <= ASYNC_COMM_WRITE_BUFFER_SIZE); //! \todo Do something less catastrophic here
+      assert(len <= WRITE_BUFFER_SIZE); // only checks in debug mode
       memcpy(data, buf, len);
     }
 
@@ -142,17 +150,27 @@ private:
   };
 
   typedef std::lock_guard<std::recursive_mutex> mutex_lock;
+
   void async_read();
   void async_read_end(const boost::system::error_code& error, size_t bytes_transferred);
 
   void async_write(bool check_write_state);
   void async_write_end(const boost::system::error_code& error, size_t bytes_transferred);
 
-  std::thread io_thread_;
-  std::recursive_mutex mutex_;
+  void process_callbacks();
 
-  uint8_t read_buffer_[ASYNC_COMM_READ_BUFFER_SIZE];
-  std::list<WriteBuffer*> write_queue_;
+  std::thread io_thread_;
+  std::thread callback_thread_;
+
+  uint8_t read_buffer_[READ_BUFFER_SIZE];
+  std::list<ReadBuffer> read_queue_;
+  std::mutex callback_mutex_;
+  std::condition_variable condition_variable_;
+  bool new_data_;
+  bool shutdown_requested_;
+
+  std::list<WriteBuffer> write_queue_;
+  std::recursive_mutex write_mutex_;
   bool write_in_progress_;
 
   std::function<void(const uint8_t*, size_t)> receive_callback_;
