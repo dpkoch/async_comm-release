@@ -1,5 +1,6 @@
 # Async Comm Library
 
+[![Build Status](http://build.ros.org/buildStatus/icon?job=Mdev__async_comm__ubuntu_bionic_amd64)](http://build.ros.org/job/Mdev__async_comm__ubuntu_bionic_amd64)
 [![Documentation Status](https://codedocs.xyz/dpkoch/async_comm.svg)](https://codedocs.xyz/dpkoch/async_comm/)
 
 This project provides a C++ library that gives a simple interface for asynchronous serial communications over a serial port or UDP.
@@ -137,7 +138,7 @@ Very simple example programs are provided to illustrate the usage as described b
 One tricky part is registering the member function of a class as the receive callback. This is accomplished using `std::bind`. For example, if I want to register the `receive` function of `MyClass` from within the class, I would use
 
 ```C++
-serial_.register_receive_callback(std::bind(&MyClass::receive, this, std::placeholders::_1));
+serial_.register_receive_callback(std::bind(&MyClass::receive, this, std::placeholders::_1, std::placeholders::_2));
 ```
 
 where `serial_` is an instance of `async_comm::Serial`.
