@@ -1,3 +1,26 @@
+## async_comm (melodic) - 0.1.1-0
+
+The packages in the `async_comm` repository were released into the `melodic` distro by running `/usr/bin/bloom-release async_comm --rosdistro melodic` on `Thu, 21 Feb 2019 23:19:19 -0000`
+
+The `async_comm` package was released.
+
+Version of package(s) in repository `async_comm`:
+
+- upstream repository: https://github.com/dpkoch/async_comm.git
+- release repository: https://github.com/dpkoch/async_comm-release.git
+- rosdistro version: `0.1.0-0`
+- old version: `0.1.0-0`
+- new version: `0.1.1-0`
+
+Versions of tools used:
+
+- bloom version: `0.7.2`
+- catkin_pkg version: `0.4.10`
+- rosdep version: `0.15.0`
+- rosdistro version: `0.7.2`
+- vcstools version: `0.1.40`
+
+
 ## async_comm (lunar) - 0.1.1-0
 
 The packages in the `async_comm` repository were released into the `lunar` distro by running `/usr/bin/bloom-release async_comm --rosdistro lunar` on `Thu, 21 Feb 2019 23:16:13 -0000`
