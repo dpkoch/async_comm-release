@@ -49,8 +49,30 @@
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 
+#include <async_comm/message_handler.h>
+
 namespace async_comm
 {
+
+/**
+ * @class CommListener
+ * @brief Abstract base class for getting comm events via a listener interface
+ */
+class CommListener
+{
+public:
+  /**
+   * @brief Callback for data received
+   *
+   * @warning The data buffer passed to the callback function will be invalid after the callback function exits. If you
+   * want to store the data for later processing, you must copy the data to a new buffer rather than storing the
+   * pointer to the buffer.
+   *
+   * @param buf Address of buffer containing received bytes
+   * @param size Number of bytes in the receive buffer
+   */
+  virtual void receive_callback(const uint8_t * buf, size_t size) = 0;
+};
 
 /**
  * @class Comm
@@ -59,7 +81,11 @@ namespace async_comm
 class Comm
 {
 public:
-  Comm();
+  /**
+   * @brief Set up asynchronous communication base class
+   * @param message_handler Custom message handler, or omit for default handler
+   */
+  Comm(MessageHandler& message_handler = default_message_handler_);
   virtual ~Comm();
 
   /**
@@ -101,10 +127,23 @@ public:
    */
   void register_receive_callback(std::function<void(const uint8_t*, size_t)> fun);
 
+  /**
+   * @brief Register a listener for when bytes are received on the port
+   *
+   * The listener must inherit from CommListener and implement the `receive_callback` function.  This is another
+   * mechanism for receiving data from the Comm interface without needing to create function pointers. Multiple
+   * listeners can be added and all will get the callback
+   *
+   * @param listener Reference to listener
+   */
+  void register_listener(CommListener &listener);
+
 protected:
 
   static constexpr size_t READ_BUFFER_SIZE = 1024;
   static constexpr size_t WRITE_BUFFER_SIZE = 1024;
+
+  static DefaultMessageHandler default_message_handler_;
 
   virtual bool is_open() = 0;
   virtual bool do_init() = 0;
@@ -114,6 +153,7 @@ protected:
   virtual void do_async_write(const boost::asio::const_buffers_1 &buffer,
                               boost::function<void(const boost::system::error_code&, size_t)> handler) = 0;
 
+  MessageHandler& message_handler_;
   boost::asio::io_service io_service_;
 
 private:
@@ -173,7 +213,8 @@ private:
   std::recursive_mutex write_mutex_;
   bool write_in_progress_;
 
-  std::function<void(const uint8_t*, size_t)> receive_callback_;
+  std::function<void(const uint8_t *, size_t)> receive_callback_ = nullptr;
+  std::vector<std::reference_wrapper<CommListener>> listeners_;
 };
 
 } // namespace async_comm
