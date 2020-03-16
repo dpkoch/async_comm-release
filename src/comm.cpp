@@ -43,7 +43,10 @@
 namespace async_comm
 {
 
-Comm::Comm() :
+DefaultMessageHandler Comm::default_message_handler_;
+
+Comm::Comm(MessageHandler& message_handler) :
+  message_handler_(message_handler),
   io_service_(),
   new_data_(false),
   shutdown_requested_(false),
@@ -109,6 +112,11 @@ void Comm::register_receive_callback(std::function<void(const uint8_t*, size_t)>
   receive_callback_ = fun;
 }
 
+void Comm::register_listener(CommListener &listener)
+{
+  listeners_.push_back(listener);
+}
+
 void Comm::async_read()
 {
   if (!is_open()) return;
@@ -124,7 +132,7 @@ void Comm::async_read_end(const boost::system::error_code &error, size_t bytes_t
 {
   if (error)
   {
-    std::cerr << error.message() << std::endl;
+    message_handler_.error(error.message());
     close();
     return;
   }
@@ -161,7 +169,7 @@ void Comm::async_write_end(const boost::system::error_code &error, size_t bytes_
 {
   if (error)
   {
-    std::cerr << error.message() << std::endl;
+    message_handler_.error(error.message());
     close();
     return;
   }
@@ -209,11 +217,18 @@ void Comm::process_callbacks()
     new_data_ = false;
     lock.unlock();
 
-    // execute callback for all new data
+    // execute callbacks for all new data
     while (!local_queue.empty())
     {
       ReadBuffer buffer = local_queue.front();
-      receive_callback_(buffer.data, buffer.len);
+      if (receive_callback_)
+      {
+        receive_callback_(buffer.data, buffer.len);
+      }
+      for (std::reference_wrapper<CommListener> listener_ref : listeners_)
+      {
+        listener_ref.get().receive_callback(buffer.data, buffer.len);
+      }
       local_queue.pop_front();
     }
   }

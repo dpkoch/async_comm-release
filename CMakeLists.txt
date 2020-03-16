@@ -1,7 +1,5 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(async_comm)
-
-set(CMAKE_CXX_FLAGS "-std=c++11")
 
 if (NOT DEFINED CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -10,14 +8,18 @@ endif (NOT DEFINED CMAKE_BUILD_TYPE)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(Threads)
 
-include_directories(include)
-include_directories(${Boost_INCLUDE_DIRS})
-
 add_library(${PROJECT_NAME} SHARED
   src/comm.cpp
   src/udp.cpp
   src/serial.cpp
+  src/tcp_client.cpp
 )
+target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+target_compile_options(${PROJECT_NAME} PRIVATE -std=c++11)
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
 # examples
@@ -32,6 +34,9 @@ if(ASYNC_COMM_BUILD_EXAMPLES)
 
   add_executable(serial_protocol examples/serial_protocol.cpp)
   target_link_libraries(serial_protocol ${PROJECT_NAME})
+
+  add_executable(tcp_client_hello_world examples/tcp_client_hello_world.cpp)
+  target_link_libraries(tcp_client_hello_world ${PROJECT_NAME})
 endif(ASYNC_COMM_BUILD_EXAMPLES)
 
 # install
@@ -54,4 +59,3 @@ install(FILES ${PROJECT_NAME}-config.cmake DESTINATION ${LIB_DEST})
 
 # install package.xml for ROS release
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
-
