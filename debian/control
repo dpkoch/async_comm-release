@@ -1,0 +1,12 @@
+Source: ros-noetic-async-comm
+Section: misc
+Priority: optional
+Maintainer: Daniel Koch <danielpkoch@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), libboost-all-dev
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-noetic-async-comm
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libboost-all-dev
+Description: A C++ library for asynchronous serial communication
