@@ -1,3 +1,26 @@
+## async_comm (kinetic) - 0.2.1-4
+
+The packages in the `async_comm` repository were released into the `kinetic` distro by running `/usr/bin/bloom-release async_comm --rosdistro kinetic` on `Tue, 02 Feb 2021 00:52:41 -0000`
+
+The `async_comm` package was released.
+
+Version of package(s) in repository `async_comm`:
+
+- upstream repository: https://github.com/dpkoch/async_comm.git
+- release repository: https://github.com/dpkoch/async_comm-release.git
+- rosdistro version: `0.2.1-3`
+- old version: `0.2.1-3`
+- new version: `0.2.1-4`
+
+Versions of tools used:
+
+- bloom version: `0.10.0`
+- catkin_pkg version: `0.4.23`
+- rosdep version: `0.20.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## async_comm (noetic) - 0.2.1-1
 
 The packages in the `async_comm` repository were released into the `noetic` distro by running `/usr/bin/bloom-release async_comm --track noetic --rosdistro noetic --new-track` on `Thu, 21 Jan 2021 05:54:31 -0000`
